@@ -1,6 +1,6 @@
 const { predict } = require("./services");
 
-const postImage = async (request, h) => {
+const postImageHandler = async (request, h) => {
   const payload = request.payload;
   // console.log('Request Payload:', payload);
 
@@ -9,7 +9,6 @@ const postImage = async (request, h) => {
   }
 
   const predictResults = await predict({ payload });
-  // const predictResults = "boi";
 
   const response = h.response({
     status: 'success',
@@ -22,4 +21,4 @@ const postImage = async (request, h) => {
   return response;
 }
 
-module.exports = { postImage };
+module.exports = { postImageHandler };
