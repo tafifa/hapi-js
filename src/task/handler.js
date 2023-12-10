@@ -1,10 +1,20 @@
+const api_key = require("../../.private/key.json").api_key;
+
 const { getAllMuseum, getAllTask } = require("./services");
 
 const getAllMuseumHandler = async (request, h) => {
+  const key = request.headers["x-api-key"];
+  if (key !== api_key) {
+    const response = h.response({
+      status: "unauthorized",
+    });
+    response.code(401);
+    return response;
+  }
+
   const museum = await getAllMuseum();
   const response = h.response({
     status: 'success',
-    message: 'Gambar berhasil terkirim',
     data: {
       museum,
     },
@@ -14,11 +24,22 @@ const getAllMuseumHandler = async (request, h) => {
 };
 
 const getAllTaskHandler = async (request, h) => {
-  const { museumid } = request.params;
-  const task = await getAllTask(museumid);
+  const key = request.headers["x-api-key"];
+  if (key !== api_key) {
+    const response = h.response({
+      status: "unauthorized",
+    });
+    response.code(401);
+    return response;
+  }
+
+  const { museumId } = request.params;
+  const task = await getAllTask({museumId});
+
+  console.log(task);
+  
   const response = h.response({
     status: 'success',
-    message: 'Gambar berhasil terkirim',
     data: {
       task,
     },

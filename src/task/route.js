@@ -8,15 +8,16 @@ const route = [
     method: "GET",
     path: "/museum",
     handler: getAllMuseumHandler,
+    // handler: () => ({ result: 'Server is running and connected' })
   },
   {
     method: "GET",
-    path: "/museum/{museumid}/task",
+    path: "/museum/{museumId}",
     handler: getAllTaskHandler,
   },
   {
     method: 'GET',
-    path: '/task',
+    path: '/museum/check',
     handler: () => ({ result: 'Server is running and connected' })
   },
 ];

@@ -1,5 +1,6 @@
 const userRoutes = require("./user/route");
 const predictRoutes = require("./predict/route")
+const taskRoutes = require("./task/route")
 
 const routes = [
   {
@@ -11,6 +12,7 @@ const routes = [
   },
   ...userRoutes,
   ...predictRoutes,
+  ...taskRoutes,
 ];
 
 module.exports = routes;

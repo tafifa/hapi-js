@@ -1,60 +1,34 @@
 const {
-  getAllUsers,
-  getUsers,
-  makeUsers,
-  editUsers,
-  deleteUsers,
+  registerUser,
+  loginUser
 } = require("./handler");
 
 const route = [
   // Tambah Data Users
   {
       method: "POST",
-      path: "/users",
-      handler: makeUsers,
+      path: "/users/register",
+      handler: registerUser,
       options: {
-          payload: {
-              maxBytes: 10485760,
-              multipart: true,
-              output: 'stream'
-          },
+        payload: {
+            maxBytes: 10485760,
+            multipart: true,
+            output: 'stream'
+        },
       },
   },
-
-  // Ambil Data Users
-  {
-      method: "GET",
-      path: "/users/{id}",
-      handler: getUsers,
-  },
-
-  // Hapus Data Users Tertentu
-  {
-      method: "DELETE",
-      path: "/users/{id}",
-      handler: deleteUsers
-  },
-
-  // Edit Data Users Tertentu
-  {
-      method: "PUT",
-      path: "/users/{id}",
-      handler: editUsers,
-      options: {
-          payload: {
-              maxBytes: 10485760,
-              multipart: true,
-              output: 'stream'
-          },
-      },
-  },
-
-  // Ambil Seluruh Data Users
-  {
-      method: "GET",
-      path: "/users",
-      handler: getAllUsers,
-  },
+//   {
+//     method: "POST",
+//     path: "/users/register",
+//     handler: loginUser,
+//     options: {
+//         payload: {
+//             maxBytes: 10485760,
+//             multipart: true,
+//             output: 'stream'
+//         },
+//     },
+// },
 ]
 
 // Export Route
