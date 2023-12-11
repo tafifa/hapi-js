@@ -1,8 +1,9 @@
 const axios = require('axios');
 const FormData = require('form-data');
 const firebase_admin = require("firebase-admin");
+const { copyFileSync } = require('fs');
 
-const predict = async ({ imageFile, taskName }) => {
+const predict = async ({ imageFile, museumId, taskId }) => {
   const apiUrl = 'https://ml-tfjs-bx6pwrssuq-et.a.run.app/predicts';
 
   // const { imageFile, taskName } = payload;
@@ -27,9 +28,31 @@ const predict = async ({ imageFile, taskName }) => {
 
   // // Assuming the API response contains the values you want to return
   const returnValue = response.data;
+  const db = firebase_admin.firestore();
+  const subcollectionRef = db.collection("museum").doc(museumId).collection("object").doc(taskId);
+  // if (!subcollectionRef.exists) {
+  //   const response = h.response({
+  //     status: "not found",
+  //     message: "User not found",
+  //   });
+  //   response.code(404);
+  //   return response;
+  // }
 
-  console.log(taskName);
-  console.log(returnValue);
+  const taskSnapshot = await subcollectionRef.get();
+  
+  if (!taskSnapshot.exists) {
+    console.log('Task not found');
+  }
+
+  const taskData = taskSnapshot.data();
+  
+  // Assuming "taskName" is a field in the task document
+  const taskName = taskData.object_name;
+  
+  // console.log('Task Name:', taskName);
+
+  // console.log(returnValue);
   if (taskName && returnValue.result && taskName === returnValue.result) {
     return 'success';
   } else {
@@ -39,21 +62,58 @@ const predict = async ({ imageFile, taskName }) => {
 
 const addPoint = async ({ UID }) => {
   const db = firebase_admin.firestore();
-  const userSnapshot = await db.collection("users").get();
+  const outputDb = db.collection("users");
+  const userSnapshot = await outputDb.doc(UID).get();
+  const userData = userSnapshot.data();
 
-  const userData = [];
-  userSnapshot.docs.forEach((doc) => {
-    const data = doc.data();
-    userData.push(data);
-  });
-
-  const user = userData.find(user => user.user_id === UID);
-  if (!user) {
-    console.log('No Username or Email registered');
-    // return h.response({ error: 'No Username or Email registered' }).code(400);
+  console.log(userData)
+  if (!userData) {
+    console.log('No user with the specified UID');
+    // Handle the case when no user is found (return an error or take appropriate action)
   }
-  console.log("boi")
+
+  // Get the current user_points value
+  const currentPoints = userData.user_points || 0;
+
+  // Add points (modify this logic as needed)
+  const pointsToAdd = 10;
+  const updatedPoints = currentPoints + pointsToAdd;
+
+  // Update the user_points field in Firestore
+  await outputDb.doc(UID).update({
+    user_points: updatedPoints,
+  });
 };
 
-module.exports = { predict, addPoint };
+const takenBy  = async ({ museumId, taskId, UID }) => {
+  const db = firebase_admin.firestore();
+  const subcollectionRef = db.collection("museum").doc(museumId).collection("object").doc(taskId);
 
+  const subSnapshot = await subcollectionRef.get();
+
+  if (!subSnapshot.exists) {
+    console.log('No Object with the specified ID');
+    // Handle the case when no museum is found (return an error or take appropriate action)
+  }
+
+  // Get the current takenBy array from the document
+  const currentTakenBy = subSnapshot.get('takenBy') || [];
+
+  // Check if UID is already in the takenBy array
+  if (currentTakenBy.includes(UID)) {
+    console.log(`User with UID ${UID} is already in the takenBy array`);
+    return true;
+    // Handle the case when the user is already in the array (return an error or take appropriate action)
+  }
+
+  // Add UID to the takenBy array
+  const updatedTakenBy = [...currentTakenBy, UID];
+
+  // Update the takenBy field in the subCollection document
+  await subcollectionRef.update({
+    takenBy: updatedTakenBy,
+  });
+  return false;
+};
+
+module.exports = { predict, addPoint, takenBy };

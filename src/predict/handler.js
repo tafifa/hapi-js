@@ -1,5 +1,5 @@
 const api_key = require("../../.private/key.json").api_key;
-const { predict, addPoint } = require("./services");
+const { predict, addPoint, takenBy } = require("./services");
 
 const postImageHandler = async (request, h) => {
   const key = request.headers["x-api-key"];
@@ -15,14 +15,17 @@ const postImageHandler = async (request, h) => {
     return h.response({ error: 'Missing imageFile or taskName data' }).code(400);
   }
 
-  const { imageFile, taskName, UID } = request.payload;
+  const { imageFile, UID } = request.payload;
+  const { museumId, taskId } = request.params;
   // console.log('Request Payload:', payload, '\nRequest Params:', params);
 
-  
-
-  const predictResults = await predict({ imageFile, taskName });
+  const predictResults = await predict({ imageFile, museumId, taskId });
   // console.log(predictResults)
-  if (predictResults == "success") await addPoint({ UID });
+  if (predictResults == "success") {
+    if (!await takenBy({ museumId, taskId, UID })) {
+      await addPoint({ UID });
+    }
+  };
 
   const response = h.response({
     status: 'success',

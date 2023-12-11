@@ -5,7 +5,7 @@ const {
 const route = [ 
   {
     method: "POST",
-    path: "/predict",
+    path: "/predict/{museumId}/{taskId}",
     handler: postImageHandler,
     options: {
         payload: {

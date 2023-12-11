@@ -11,6 +11,19 @@ const routes = [
       return { result: 'Server is running and connected' };
     }
   },
+  {
+    method: 'GET',
+    path: '/search',
+    handler: (request, h) => {
+      const { category, brand, model } = request.query;
+      
+      if (!category || !brand || !model) {
+        return h.response({ error: 'Category, brand, and model are required parameters' }).code(400);
+      }
+
+      return `Search results: Category - ${category}, Brand - ${brand}, Model - ${model}`;
+    },
+  },
   ...userRoutes,
   ...userRoutes2,
   ...predictRoutes,
