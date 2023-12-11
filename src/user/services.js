@@ -21,10 +21,13 @@ const createUserRegister = async (request) => {
   
     // Save user details to Firestore
     await outputDb.doc(userId).set({
+      completedTask: [],
+      firebase_uid: uid, // Save Firebase UID
+      user_points: 0,
       user_id: userId,
       user_name: user_name,
       user_email: user_email,
-      firebase_uid: uid, // Save Firebase UID
+      user_picture: '',
     });
   }
   catch (error) {
@@ -45,7 +48,7 @@ const createUserRegister = async (request) => {
   };
 };
 
-const checkUserLogin = async (request) => {
+const checkUserLogin = async (request, h) => {
   const {
     user_name,
     user_email,
@@ -53,25 +56,40 @@ const checkUserLogin = async (request) => {
   } = request.payload;
 
   const db = firebase_admin.firestore();
-  const userSnapshot = await db.collection("users")
-    .where('username', '==', user_name) // Check if the username exists
-    .orWhere('email', '==', user_email) // Or check if the email exists
-    .get();
+  const userSnapshot = await db.collection("users").get();
 
-  const userData = userSnapshot.docs[0].data();
-  try {
-    const userCredential = await firebase_admin.auth().signInWithEmailAndPassword(user_email, user_password);
-    // Authentication successful, return a success response or a token.
-    const response = h.response({ message: 'Login successful', user: userData, token: userCredential.user.getIdToken() });
-    response.code(200); // OK
-    return response;
-  } 
-  catch (error) {
-    // Authentication failed, return an appropriate response.
-    const response = h.response({ error: 'Invalid credentials' });
-    response.code(401); // Unauthorized
-    return response;
+  const userData = [];
+  userSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    userData.push(data);
+  });
+
+  const user = userData.find(user => user.user_name === user_name || user.user_email === user_email);
+  if (!user) {
+    console.log('No Username or Email registered');
+    // return h.response({ error: 'No Username or Email registered' }).code(400);
   }
+
+  const firebase_uid = user.firebase_uid;
+  console.log(firebase_uid)
+
+  const userCredential = await firebase_admin.auth().signInWithEmailAndPassword(user_email, user_password);
+  const token = userCredential.user.getIdToken();
+  return token;
+  
+  // try {
+  //   const userCredential = await firebase_admin.auth().signInWithEmailAndPassword(user_email, user_password);
+  //   // Authentication successful, return a success response or a token.
+  //   const response = h.response({ message: 'Login successful', user: userData, token: userCredential.user.getIdToken() });
+  //   response.code(200); // OK
+  //   return response;
+  // } 
+  // catch (error) {
+  //   // Authentication failed, return an appropriate response.
+  //   const response = h.response({ error: 'Invalid credentials' });
+  //   response.code(401); // Unauthorized
+  //   return response;
+  // }
 };
 
 module.exports = { createUserRegister, checkUserLogin };

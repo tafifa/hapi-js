@@ -1,14 +1,28 @@
-const { predict } = require("./services");
+const api_key = require("../../.private/key.json").api_key;
+const { predict, addPoint } = require("./services");
 
 const postImageHandler = async (request, h) => {
-  const payload = request.payload;
-  // console.log('Request Payload:', payload);
+  const key = request.headers["x-api-key"];
+  if (key !== api_key) {
+    const response = h.response({
+      status: "unauthorized",
+    });
+    response.code(401);
+    return response;
+  }
 
-  if (!payload) {
+  if (!request.payload) {
     return h.response({ error: 'Missing imageFile or taskName data' }).code(400);
   }
 
-  const predictResults = await predict({ payload });
+  const { imageFile, taskName, UID } = request.payload;
+  // console.log('Request Payload:', payload, '\nRequest Params:', params);
+
+  
+
+  const predictResults = await predict({ imageFile, taskName });
+  // console.log(predictResults)
+  if (predictResults == "success") await addPoint({ UID });
 
   const response = h.response({
     status: 'success',

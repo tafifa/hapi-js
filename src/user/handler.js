@@ -1,5 +1,5 @@
 const api_key = require("../../.private/key.json").api_key;
-const { createUserRegister } = require("./services");
+const { createUserRegister, checkUserLogin } = require("./services");
 
 const registerUser = async (request, h) => {
   const key = request.headers["x-api-key"];
@@ -30,10 +30,11 @@ const loginUser = async (request, h) => {
     return response;
   }
 
-  await checkUserLogin(request);
+  const dataUser = await checkUserLogin(request);
 
   const response = h.response({
     status: "success",
+    data: dataUser
   });
   response.code(200);
   return response;

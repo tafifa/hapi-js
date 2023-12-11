@@ -4,8 +4,7 @@ const getAllMuseum = async ( ) => {
   const db = firebase_admin.firestore();
   const responseData = {};
   responseData["museum"] = [];
-  const outputDb = await db.collection("museum");
-  const snapshot = await outputDb.get();
+  const snapshot = await db.collection("museum").get();
 
   snapshot.forEach((doc) => {
     const dataObject = doc.data();

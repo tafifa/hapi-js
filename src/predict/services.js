@@ -1,12 +1,11 @@
 const axios = require('axios');
 const FormData = require('form-data');
+const firebase_admin = require("firebase-admin");
 
-const predict = async ({ payload }) => {
+const predict = async ({ imageFile, taskName }) => {
   const apiUrl = 'https://ml-tfjs-bx6pwrssuq-et.a.run.app/predicts';
 
-  const { imageFile, taskName } = payload;
-  // console.log(payload)
-  // console.log(imageFile)
+  // const { imageFile, taskName } = payload;
    
   let formData = new FormData();
 
@@ -36,8 +35,25 @@ const predict = async ({ payload }) => {
   } else {
     return 'failure';
   }
-
 }
 
-module.exports = { predict };
+const addPoint = async ({ UID }) => {
+  const db = firebase_admin.firestore();
+  const userSnapshot = await db.collection("users").get();
+
+  const userData = [];
+  userSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    userData.push(data);
+  });
+
+  const user = userData.find(user => user.user_id === UID);
+  if (!user) {
+    console.log('No Username or Email registered');
+    // return h.response({ error: 'No Username or Email registered' }).code(400);
+  }
+  console.log("boi")
+};
+
+module.exports = { predict, addPoint };
 

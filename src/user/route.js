@@ -17,18 +17,18 @@ const route = [
         },
       },
   },
-//   {
-//     method: "POST",
-//     path: "/users/register",
-//     handler: loginUser,
-//     options: {
-//         payload: {
-//             maxBytes: 10485760,
-//             multipart: true,
-//             output: 'stream'
-//         },
-//     },
-// },
+  {
+    method: "POST",
+    path: "/users/login",
+    handler: loginUser,
+    options: {
+        payload: {
+            maxBytes: 10485760,
+            multipart: true,
+            output: 'stream'
+        },
+    },
+},
 ]
 
 // Export Route
