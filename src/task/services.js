@@ -1,48 +1,51 @@
-const firebase_admin = require("firebase-admin");
+const { invariantError } = require('../exceptions/invariantError');
 
-const getAllMuseum = async ( ) => {
-  const db = firebase_admin.firestore();
-  const responseData = {};
-  responseData["museum"] = [];
-  const snapshot = await db.collection("museum").get();
+const firebaseAdmin = require('firebase-admin');
 
-  snapshot.forEach((doc) => {
-    const dataObject = doc.data();
-    responseData["museum"].push(dataObject);
+const getAllMuseum = async ({ request, h }) => {
+  const db = firebaseAdmin.firestore();
+  const outputDb = await db.collection('museum').get();
+
+  const museumData = [];
+  outputDb.forEach((doc) => {
+    museumData.push(doc.data());
   });
-  
-  return responseData.museum;
+
+  return h.response({
+    status: 'success',
+    data: {
+      museumData,
+    },
+  }).code(201);
 };
 
-const getAllTask = async ({ museumId }) => {
-  const db = firebase_admin.firestore();
+const getAllTask = async ({ request, h }) => {
+  const {
+    museum_id,
+  } = request.params;
 
-  // Initialize an empty array to store the subcollection data
-  const subcollectionData = [];
+  const db = firebaseAdmin.firestore();
+  const outputDb = db.collection('museum').doc(museum_id);
+  const museumData = await outputDb.get();
 
-  try {
-    // Get a reference to the subcollection based on the museum ID
-    const subcollectionRef = db.collection("museum").doc(museumId).collection("object");
-
-    // Retrieve all documents from the subcollection
-    const snapshot = await subcollectionRef.get();
-
-    // Iterate through each document in the subcollection
-    snapshot.forEach((doc) => {
-      // Extract the data from the document
-      const dataObject = doc.data();
-
-      // Push the data object to the subcollectionData array
-      subcollectionData.push(dataObject);
-    });
-
-    // Return the array of subcollection data
-    return subcollectionData;
-  } catch (error) {
-    // Handle errors (e.g., museum not found, subcollection not found)
-    console.error("Error fetching subcollection:", error);
-    throw error; // You can customize error handling based on your needs
+  if (!museumData.exists) {
+    const message = "Museum not found";
+    console.log(message);
+    return invariantError({ request, h }, message);
   }
+
+  const taskData = [];
+  const subOutputDb = await outputDb.collection('object').get();
+  subOutputDb.forEach((doc) => {
+    taskData.push(doc.data());
+  });
+
+  return h.response({
+    status: 'success',
+    data: {
+      taskData,
+    },
+  }).code(201);
 };
 
 module.exports = { getAllMuseum, getAllTask };

@@ -1,43 +1,19 @@
-const api_key = require("../../.private/key.json").api_key;
-const { createUserRegister, checkUserLogin } = require("./services");
+const { checkAuthorization } = require('../exceptions/unauthorized');
+
+const { createUserRegister, checkUserLogin } = require('./services');
 
 const registerUser = async (request, h) => {
-  const key = request.headers["x-api-key"];
-  if (key !== api_key) {
-    const response = h.response({
-    status: "unauthorized",
-    });
-    response.code(401);
-    return response;
-  }
+  const key = request.headers['x-api-key'];
+  checkAuthorization({ request, h }, key);
 
-  await createUserRegister(request);
-
-  const response = h.response({
-    status: "success",
-  });
-  response.code(200);
-  return response;
+  return await createUserRegister({ request, h });
 };
 
 const loginUser = async (request, h) => {
-  const key = request.headers["x-api-key"];
-  if (key !== api_key) {
-    const response = h.response({
-    status: "unauthorized",
-    });
-    response.code(401);
-    return response;
-  }
+  const key = request.headers['x-api-key'];
+  checkAuthorization({ request, h }, key);
 
-  const dataUser = await checkUserLogin(request);
-
-  const response = h.response({
-    status: "success",
-    data: dataUser
-  });
-  response.code(200);
-  return response;
-}
+  return await checkUserLogin({ request, h });
+};
 
 module.exports = { registerUser, loginUser };

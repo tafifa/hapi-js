@@ -1,25 +1,24 @@
 const {
   getAllMuseumHandler,
   getAllTaskHandler,
-} = require("./handler");
+} = require('./handler');
 
-const route = [ 
+const route = [
   {
-    method: "GET",
-    path: "/museum",
+    method: 'GET',
+    path: '/museum',
     handler: getAllMuseumHandler,
-    // handler: () => ({ result: 'Server is running and connected' })
   },
   {
-    method: "GET",
-    path: "/museum/{museumId}",
+    method: 'GET',
+    path: '/museum/{museum_id}',
     handler: getAllTaskHandler,
   },
   {
     method: 'GET',
     path: '/museum/check',
-    handler: () => ({ result: 'Server is running and connected' })
+    handler: () => ({ result: 'Server is running and connected' }),
   },
 ];
 
-module.exports = route ;
+module.exports = route;

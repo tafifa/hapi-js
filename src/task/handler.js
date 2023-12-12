@@ -1,51 +1,19 @@
-const api_key = require("../../.private/key.json").api_key;
+const { checkAuthorization } = require('../exceptions/unauthorized');
 
-const { getAllMuseum, getAllTask } = require("./services");
+const { getAllMuseum, getAllTask } = require('./services');
 
 const getAllMuseumHandler = async (request, h) => {
-  const key = request.headers["x-api-key"];
-  if (key !== api_key) {
-    const response = h.response({
-      status: "unauthorized",
-    });
-    response.code(401);
-    return response;
-  }
+  const key = request.headers['x-api-key'];
+  checkAuthorization({ request, h }, key);
 
-  const museum = await getAllMuseum();
-  const response = h.response({
-    status: 'success',
-    data: {
-      museum,
-    },
-  });
-  response.code(201);
-  return response;
+  return await getAllMuseum({ request, h });
 };
 
 const getAllTaskHandler = async (request, h) => {
-  const key = request.headers["x-api-key"];
-  if (key !== api_key) {
-    const response = h.response({
-      status: "unauthorized",
-    });
-    response.code(401);
-    return response;
-  }
+  const key = request.headers['x-api-key'];
+  checkAuthorization({ request, h }, key);
 
-  const { museumId } = request.params;
-  const task = await getAllTask({museumId});
-
-  console.log(task);
-  
-  const response = h.response({
-    status: 'success',
-    data: {
-      task,
-    },
-  });
-  response.code(201);
-  return response;
+  return await getAllTask({ request, h });
 };
 
 module.exports = { getAllMuseumHandler, getAllTaskHandler };

@@ -1,119 +1,110 @@
+const { invariantError } = require('../exceptions/invariantError');
+
 const axios = require('axios');
 const FormData = require('form-data');
-const firebase_admin = require("firebase-admin");
-const { copyFileSync } = require('fs');
+const firebaseAdmin = require('firebase-admin');
 
-const predict = async ({ imageFile, museumId, taskId }) => {
-  const apiUrl = 'https://ml-tfjs-bx6pwrssuq-et.a.run.app/predicts';
+const predict = async ({ request, h }) => {
+  if (!request.payload) {
+    const message = "Missing imageFile or user_id data";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
 
-  // const { imageFile, taskName } = payload;
-   
-  let formData = new FormData();
+  const { imageFile, user_id } = request.payload;
+  const { museum_id, object_id } = request.params;
 
-  // // Append the image buffer as a file to the FormData
+  const db = firebaseAdmin.firestore();
+
+  const outputDbUser = db.collection('users');
+  const userData = await outputDbUser.where('user_id', '==', user_id).get();
+  if (userData.size == 0) {
+    const message = "User didn't exists";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
+
+  const outputDbMuseum = db.collection('museum')
+      .doc(museum_id)
+      .collection('object')
+      .doc(object_id);
+
+  const objectData = await outputDbMuseum.get();
+  if (!objectData.exists) {
+    const message = "Museum or Object not found";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
+
+  if (await takenBy({ user_id }, { outputDbMuseum, objectData })) {
+    const message = "Object has been taked by user";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
+
+  const MLapiurl = 'https://ml-tfjs-bx6pwrssuq-et.a.run.app/predicts';
+
+  const formData = new FormData();
   formData.append('image', Buffer.from(imageFile), {
-    filename: 'image.jpg', // Specify the desired filename
-    contentType: 'image/jpeg', // Specify the content type if known
+    filename: 'image.jpg',
+    contentType: 'image/jpeg',
   });
 
-  const response = await axios.post(
-    apiUrl, 
-    formData, 
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+  const requestMLapi = await axios.post(
+      MLapiurl,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
-    }
   );
+  const responseMLapi = requestMLapi.data;
 
-  // // Assuming the API response contains the values you want to return
-  const returnValue = response.data;
-  const db = firebase_admin.firestore();
-  const subcollectionRef = db.collection("museum").doc(museumId).collection("object").doc(taskId);
-  // if (!subcollectionRef.exists) {
-  //   const response = h.response({
-  //     status: "not found",
-  //     message: "User not found",
-  //   });
-  //   response.code(404);
-  //   return response;
-  // }
+  const object_name = objectData.data().object_name;
+  if (object_name !== responseMLapi.result) {
+    return h.response({
+      status: "success",
+      message: "Gambar berhasil terkirim",
+      data: {
+        result: "Gagal",
+      },
+    }).code(201);
+  };
 
-  const taskSnapshot = await subcollectionRef.get();
-  
-  if (!taskSnapshot.exists) {
-    console.log('Task not found');
-  }
-
-  const taskData = taskSnapshot.data();
-  
-  // Assuming "taskName" is a field in the task document
-  const taskName = taskData.object_name;
-  
-  // console.log('Task Name:', taskName);
-
-  // console.log(returnValue);
-  if (taskName && returnValue.result && taskName === returnValue.result) {
-    return 'success';
-  } else {
-    return 'failure';
-  }
-}
-
-const addPoint = async ({ UID }) => {
-  const db = firebase_admin.firestore();
-  const outputDb = db.collection("users");
-  const userSnapshot = await outputDb.doc(UID).get();
-  const userData = userSnapshot.data();
-
-  console.log(userData)
-  if (!userData) {
-    console.log('No user with the specified UID');
-    // Handle the case when no user is found (return an error or take appropriate action)
-  }
-
-  // Get the current user_points value
-  const currentPoints = userData.user_points || 0;
-
-  // Add points (modify this logic as needed)
-  const pointsToAdd = 10;
-  const updatedPoints = currentPoints + pointsToAdd;
-
-  // Update the user_points field in Firestore
-  await outputDb.doc(UID).update({
-    user_points: updatedPoints,
-  });
+  await addPoint({ user_id }, { outputDbUser, userData });
+  return h.response({
+    status: "success",
+    message: "Gambar berhasil terkirim",
+    data: {
+      result: "Berhasil",
+    },
+  }).code(201);
 };
 
-const takenBy  = async ({ museumId, taskId, UID }) => {
-  const db = firebase_admin.firestore();
-  const subcollectionRef = db.collection("museum").doc(museumId).collection("object").doc(taskId);
+const takenBy = async ({ user_id }, { outputDbMuseum, objectData }) => {
+  const currentObject = await objectData.get('takenBy') || [];
 
-  const subSnapshot = await subcollectionRef.get();
-
-  if (!subSnapshot.exists) {
-    console.log('No Object with the specified ID');
-    // Handle the case when no museum is found (return an error or take appropriate action)
-  }
-
-  // Get the current takenBy array from the document
-  const currentTakenBy = subSnapshot.get('takenBy') || [];
-
-  // Check if UID is already in the takenBy array
-  if (currentTakenBy.includes(UID)) {
-    console.log(`User with UID ${UID} is already in the takenBy array`);
+  if (currentObject.includes(user_id)) {
     return true;
-    // Handle the case when the user is already in the array (return an error or take appropriate action)
   }
 
-  // Add UID to the takenBy array
-  const updatedTakenBy = [...currentTakenBy, UID];
-
-  // Update the takenBy field in the subCollection document
-  await subcollectionRef.update({
-    takenBy: updatedTakenBy,
+  const updatedObject = [...currentObject, user_id];
+  await outputDbMuseum.update({
+    takenBy: updatedObject,
   });
   return false;
 };
 
-module.exports = { predict, addPoint, takenBy };
+const addPoint = async ({ user_id }, { outputDbUser, userData }) => {
+  const currentPoints = userData.user_points || 0;
+
+  const pointsToAdd = 10;
+  const updatedPoints = currentPoints + pointsToAdd;
+
+  await outputDbUser.doc(user_id).update({
+    user_points: updatedPoints,
+  });
+};
+
+module.exports = { predict };

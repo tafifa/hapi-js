@@ -1,25 +1,26 @@
 const {
   postImageHandler,
-} = require("./handler");
+} = require('./handler');
 
-const route = [ 
+const route = [
   {
-    method: "POST",
-    path: "/predict/{museumId}/{taskId}",
+    method: 'POST',
+    path: '/predict/{museum_id}/{object_id}',
     handler: postImageHandler,
     options: {
-        payload: {
-          allow: 'multipart/form-data',
-          multipart: true,
-          maxBytes: 2 * 1024 * 1024,
-        },
+      payload: {
+        output: 'data',
+        allow: 'multipart/form-data',
+        multipart: true,
+        maxBytes: 2 * 1024 * 1024,
+      },
     },
   },
   {
     method: 'GET',
-    path: '/predict/check',
-    handler: () => ({ result: 'Server is running and connected' })
+    path: '/predict',
+    handler: () => ({ result: 'Server is running and connected' }),
   },
 ];
 
-module.exports = route ;
+module.exports = route;
