@@ -10,6 +10,7 @@ const createUserRegister = async ({ request, h }) => {
   } = request.payload;
 
   const userId = 'u' + Date.now().toString();
+  const userUrl = `https://storage.googleapis.com/artventure/users/profile.png`;
   const db = firebaseAdmin.firestore();
   const outputDb = db.collection('users');
 
@@ -19,6 +20,15 @@ const createUserRegister = async ({ request, h }) => {
     return invariantError({ request, h }, message);
   }
 
+  // Create user in Firebase Authentication using Admin SDK
+  const userRecord = await firebaseAdmin.auth().createUser({
+    email: user_email,
+    password: user_password,
+  });
+
+  // Get the user UID from the userRecord
+  const uid = userRecord.uid;
+
   await outputDb.doc(userId).set({
     completedTask: [],
     user_points: 0,
@@ -26,6 +36,8 @@ const createUserRegister = async ({ request, h }) => {
     user_name: user_name,
     user_email: user_email,
     user_pass: user_password,
+    user_picture: userUrl,
+    firebase_uid: uid, // Save Firebase UID
   });
   console.log("success");
   return h.response({
