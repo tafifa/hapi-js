@@ -1,6 +1,6 @@
 const invariantError = async ({ request, h }, message) => {
   return h.response({
-    error: 'Client Error',
+    error: true,
     message: message,
   }).code(400);
 };

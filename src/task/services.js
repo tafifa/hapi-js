@@ -12,10 +12,9 @@ const getAllMuseum = async ({ request, h }) => {
   });
 
   return h.response({
-    status: 'success',
-    data: {
-      museumData,
-    },
+    error: false,
+    message: "Get Museum data success!",
+    museumData,
   }).code(201);
 };
 
@@ -41,10 +40,9 @@ const getAllTask = async ({ request, h }) => {
   });
 
   return h.response({
-    status: 'success',
-    data: {
-      taskData,
-    },
+    error: false,
+    message: "Get Task data success!",
+    taskData,
   }).code(201);
 };
 

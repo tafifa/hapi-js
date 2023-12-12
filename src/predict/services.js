@@ -19,12 +19,12 @@ const predict = async ({ request, h }) => {
   const outputDbUser = db.collection('users');
 
   const userQuery = await outputDbUser.where('user_id', '==', user_id).get();
-  const userData = userQuery.docs[0].data();
   if (userQuery.size == 0) {
     const message = "User didn't exists";
     console.log(message);
     return invariantError({ request, h }, message);
   };
+  const userData = userQuery.docs[0].data();
 
   const outputDbMuseum = db.collection('museum')
       .doc(museum_id)
@@ -66,11 +66,9 @@ const predict = async ({ request, h }) => {
   const object_name = objectData.data().object_name;
   if (object_name !== responseMLapi.result) {
     return h.response({
-      status: "success",
+      error: false,
       message: "Gambar berhasil terkirim",
-      data: {
-        result: "Gagal",
-      },
+      result: "Gagal",
     }).code(201);
   };
 
@@ -81,11 +79,9 @@ const predict = async ({ request, h }) => {
   );
 
   return h.response({
-    status: "success",
+    error: false,
     message: "Gambar berhasil terkirim",
-    data: {
-      result: "Berhasil",
-    },
+    result: "Berhasil",
   }).code(201);
 };
 

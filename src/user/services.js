@@ -29,8 +29,8 @@ const createUserRegister = async ({ request, h }) => {
   });
   console.log("success");
   return h.response({
-    status: 'success',
-    message: "Register Succes!",
+    error: false,
+    message: "Register Success!",
   }).code(200);
 };
 
@@ -74,9 +74,9 @@ const checkUserLogin = async ({ request, h }) => {
 
   console.log("Login success!");
   return h.response({
-    status: 'success',
+    error: false,
     message: "Login Success!",
-    data: userData,
+    userData,
   }).code(200);
 };
 
