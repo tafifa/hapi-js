@@ -17,8 +17,10 @@ const predict = async ({ request, h }) => {
   const db = firebaseAdmin.firestore();
 
   const outputDbUser = db.collection('users');
-  const userData = await outputDbUser.where('user_id', '==', user_id).get();
-  if (userData.size == 0) {
+
+  const userQuery = await outputDbUser.where('user_id', '==', user_id).get();
+  const userData = userQuery.docs[0].data();
+  if (userQuery.size == 0) {
     const message = "User didn't exists";
     console.log(message);
     return invariantError({ request, h }, message);
@@ -75,7 +77,9 @@ const predict = async ({ request, h }) => {
   await addPoint(
       { user_id },
       { outputDbUser, userData },
-      { outputDbMuseum, objectData });
+      { outputDbMuseum, objectData },
+  );
+
   return h.response({
     status: "success",
     message: "Gambar berhasil terkirim",
@@ -98,18 +102,23 @@ const addPoint = async (
     { user_id },
     { outputDbUser, userData },
     { outputDbMuseum, objectData }) => {
-  const currentPoints = userData.user_points || 0;
-  const pointsToAdd = 10;
-  const updatedPoints = currentPoints + pointsToAdd;
+  const currentObject = objectData.get('takenBy') || [];
+  const pointsToAdd = objectData.get('points');
+  const objectName = objectData.get('object_name');
 
-  await outputDbUser.doc(user_id).update({
-    user_points: updatedPoints,
-  });
-
-  const currentObject = await objectData.get('takenBy') || [];
   const updatedObject = [...currentObject, user_id];
   await outputDbMuseum.update({
     takenBy: updatedObject,
+  });
+
+  const currentPoints = userData.user_points || 0;
+  const currentUser = await userData.completedTask || [];
+  const updatedPoints = currentPoints + pointsToAdd;
+
+  const updatedUser = [...currentUser, objectName];
+  await outputDbUser.doc(user_id).update({
+    completedTask: updatedUser,
+    user_points: updatedPoints,
   });
 };
 

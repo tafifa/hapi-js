@@ -31,7 +31,7 @@ const route = [
   },
   {
     method: 'GET',
-    path: '/predict/check',
+    path: '/user/check',
     handler: () => ({ result: 'Server is running and connected' }),
   },
 ];

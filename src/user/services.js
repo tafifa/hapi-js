@@ -57,16 +57,16 @@ const checkUserLogin = async ({ request, h }) => {
       .where('user_email', '==', user_email)
       .get();
 
-  let dataObject;
+  let userData;
   if (usernameQuerySnapshot.size != 0) {
-    dataObject = usernameQuerySnapshot.docs[0].data();
+    userData = usernameQuerySnapshot.docs[0].data();
   };
   if (emailQuerySnapshot.size != 0) {
-    dataObject = emailQuerySnapshot.docs[0].data();
+    userData = emailQuerySnapshot.docs[0].data();
   };
   console.log("User exists");
 
-  if (dataObject.user_pass !== user_password) {
+  if (userData.user_pass !== user_password) {
     const message = "Password doesn't match";
     console.log(message);
     return invariantError({ request, h }, message);
@@ -76,6 +76,7 @@ const checkUserLogin = async ({ request, h }) => {
   return h.response({
     status: 'success',
     message: "Login Success!",
+    data: userData,
   }).code(200);
 };
 
