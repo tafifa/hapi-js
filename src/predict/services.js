@@ -36,7 +36,7 @@ const predict = async ({ request, h }) => {
     return invariantError({ request, h }, message);
   };
 
-  if (await takenBy({ user_id }, { outputDbMuseum, objectData })) {
+  if (await takenBy({ user_id }, { objectData })) {
     const message = "Object has been taked by user";
     console.log(message);
     return invariantError({ request, h }, message);
@@ -72,7 +72,10 @@ const predict = async ({ request, h }) => {
     }).code(201);
   };
 
-  await addPoint({ user_id }, { outputDbUser, userData });
+  await addPoint(
+      { user_id },
+      { outputDbUser, userData },
+      { outputDbMuseum, objectData });
   return h.response({
     status: "success",
     message: "Gambar berhasil terkirim",
@@ -82,28 +85,31 @@ const predict = async ({ request, h }) => {
   }).code(201);
 };
 
-const takenBy = async ({ user_id }, { outputDbMuseum, objectData }) => {
+const takenBy = async ({ user_id }, { objectData }) => {
   const currentObject = await objectData.get('takenBy') || [];
 
   if (currentObject.includes(user_id)) {
     return true;
   }
-
-  const updatedObject = [...currentObject, user_id];
-  await outputDbMuseum.update({
-    takenBy: updatedObject,
-  });
   return false;
 };
 
-const addPoint = async ({ user_id }, { outputDbUser, userData }) => {
+const addPoint = async (
+    { user_id },
+    { outputDbUser, userData },
+    { outputDbMuseum, objectData }) => {
   const currentPoints = userData.user_points || 0;
-
   const pointsToAdd = 10;
   const updatedPoints = currentPoints + pointsToAdd;
 
   await outputDbUser.doc(user_id).update({
     user_points: updatedPoints,
+  });
+
+  const currentObject = await objectData.get('takenBy') || [];
+  const updatedObject = [...currentObject, user_id];
+  await outputDbMuseum.update({
+    takenBy: updatedObject,
   });
 };
 
