@@ -1,4 +1,5 @@
 const { invariantError } = require('../exceptions/invariantError');
+const api_ml_url = require("../../.private/key.json").api_ml_url;
 
 const axios = require('axios');
 const FormData = require('form-data');
@@ -44,7 +45,8 @@ const predict = async ({ request, h }) => {
     return invariantError({ request, h }, message);
   };
 
-  const MLapiurl = 'https://ml-tfjs-bx6pwrssuq-et.a.run.app/predicts';
+  // Nembak ke API ML
+  const MLapiurl = api_ml_url;
 
   const formData = new FormData();
   formData.append('image', Buffer.from(imageFile), {
