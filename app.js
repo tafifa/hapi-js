@@ -1,7 +1,7 @@
 const Hapi = require('@hapi/hapi');
 const routes = require('./src/routes');
 const firebaseAdmin = require('firebase-admin');
-const serviceAccount = require('./private/firebase.json');
+const serviceAccount = require('./.private/firebase.json');
 
 const firebaseInit = () => {
   firebaseAdmin.initializeApp({

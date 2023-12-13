@@ -6,9 +6,28 @@ const getAllMuseum = async ({ request, h }) => {
   const db = firebaseAdmin.firestore();
   const outputDb = await db.collection('museum').get();
 
-  const museumData = [];
+  let museumData = [];
   outputDb.forEach((doc) => {
     museumData.push(doc.data());
+  });
+
+  museumData = museumData.sort((a, b) => a.museum_id - b.museum_id);
+
+  const fieldOrder = [
+    'museum_id',
+    'museum_name',
+    'address',
+    'location',
+    'url_museum_img',
+  ];
+
+  // Sort the array of objects based on the field order
+  museumData = museumData.map((obj) => {
+    const sortedObj = {};
+    fieldOrder.forEach((field) => {
+      sortedObj[field] = obj[field];
+    });
+    return sortedObj;
   });
 
   return h.response({
@@ -33,10 +52,30 @@ const getAllTask = async ({ request, h }) => {
     return invariantError({ request, h }, message);
   }
 
-  const taskData = [];
+  let taskData = [];
   const subOutputDb = await outputDb.collection('object').get();
   subOutputDb.forEach((doc) => {
     taskData.push(doc.data());
+  });
+
+  taskData = taskData.sort((a, b) => a.object_id - b.object_id);
+
+  const fieldOrder = [
+    'object_id',
+    'object_name',
+    'object_year',
+    'object_description',
+    'points',
+    'takenBy',
+  ];
+
+  // Sort the array of objects based on the field order
+  taskData = taskData.map((obj) => {
+    const sortedObj = {};
+    fieldOrder.forEach((field) => {
+      sortedObj[field] = obj[field];
+    });
+    return sortedObj;
   });
 
   return h.response({
@@ -46,4 +85,49 @@ const getAllTask = async ({ request, h }) => {
   }).code(201);
 };
 
-module.exports = { getAllMuseum, getAllTask };
+const getTaskById = async ({ request, h }) => {
+  const {
+    museum_id,
+    task_id,
+  } = request.params;
+
+  const db = firebaseAdmin.firestore();
+  const museumOutputDb = db.collection('museum').doc(museum_id);
+  const museumData = await museumOutputDb.get();
+
+  if (!museumData.exists) {
+    const message = "Museum not found";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
+
+  const taskOutputDb = await museumOutputDb.collection('object')
+      .doc(task_id)
+      .get();
+  let taskData = taskOutputDb.data();
+  const fieldOrder = [
+    'object_id',
+    'object_name',
+    'object_year',
+    'object_description',
+    'points',
+    'takenBy',
+  ];
+  taskData = Object.fromEntries(
+      fieldOrder.map((key) => [key, taskData[key]]),
+  );
+
+  if (!taskOutputDb.exists) {
+    const message = "Task not found";
+    console.log(message);
+    return invariantError({ request, h }, message);
+  };
+
+  return h.response({
+    error: false,
+    message: "Get Task data by Id success!",
+    taskData,
+  }).code(201);
+};
+
+module.exports = { getAllMuseum, getAllTask, getTaskById };

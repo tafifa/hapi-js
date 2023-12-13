@@ -1,6 +1,7 @@
 const {
   getAllMuseumHandler,
   getAllTaskHandler,
+  getTaskByIdHandler,
 } = require('./handler');
 
 const route = [
@@ -13,6 +14,11 @@ const route = [
     method: 'GET',
     path: '/museum/{museum_id}',
     handler: getAllTaskHandler,
+  },
+  {
+    method: 'GET',
+    path: '/museum/{museum_id}/task/{task_id}',
+    handler: getTaskByIdHandler,
   },
   {
     method: 'GET',
