@@ -69,7 +69,7 @@ const predict = async ({ request, h }) => {
   if (object_name !== responseMLapi.result) {
     return h.response({
       error: false,
-      message: "Gambar berhasil terkirim",
+      message: "Image sent successfully",
       result: "Gagal",
     }).code(201);
   };
@@ -82,7 +82,7 @@ const predict = async ({ request, h }) => {
 
   return h.response({
     error: false,
-    message: "Gambar berhasil terkirim",
+    message: "Image sent successfully",
     result: "Berhasil",
   }).code(201);
 };
