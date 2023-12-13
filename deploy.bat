@@ -17,5 +17,4 @@ CALL gcloud run deploy^
     --max-instances=1^
     --cpu-boost^
     --cpu=1^
-    --memory=512Mi^
-    --timeout=5
+    --memory=512Mi
