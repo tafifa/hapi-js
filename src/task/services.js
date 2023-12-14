@@ -15,6 +15,7 @@ const getAllMuseum = async ({ request, h }) => {
 
   const fieldOrder = [
     'museum_id',
+    'museum_doc',
     'museum_name',
     'address',
     'location',
@@ -62,6 +63,7 @@ const getAllTask = async ({ request, h }) => {
 
   const fieldOrder = [
     'object_id',
+    'object_doc',
     'object_name',
     'object_year',
     'object_description',
@@ -107,6 +109,7 @@ const getTaskById = async ({ request, h }) => {
   let taskData = taskOutputDb.data();
   const fieldOrder = [
     'object_id',
+    'object_doc',
     'object_name',
     'object_year',
     'object_description',

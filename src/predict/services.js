@@ -92,7 +92,7 @@ const takenBy = async ({ user_id }, { objectData }) => {
 
   if (currentObject.includes(user_id)) {
     return true;
-  }
+  };
   return false;
 };
 

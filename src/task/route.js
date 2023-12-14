@@ -17,7 +17,7 @@ const route = [
   },
   {
     method: 'GET',
-    path: '/museum/{museum_id}/task/{task_id}',
+    path: '/museum/{museum_id}/{task_id}',
     handler: getTaskByIdHandler,
   },
   {
