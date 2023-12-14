@@ -1,5 +1,5 @@
 const { invariantError } = require('../exceptions/invariantError');
-const api_ml_url = require("../../.private/key.json").api_ml_url;
+const api_ml_url = require("../../private/key.json").api_ml_url;
 
 const axios = require('axios');
 const FormData = require('form-data');
