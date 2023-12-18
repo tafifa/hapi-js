@@ -5,6 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const api_key = require("../../private/key.json").api_key;
 const bucketName = require("../../private/key.json").storage_bucket;
+const { invariantError } = require('../exceptions/invariantError');
+
 
 // REWARD - Buat Data Reward Baru
 const addRewards = async (request, h) => {
@@ -76,7 +78,9 @@ const addRewards = async (request, h) => {
             });
 
             const response = h.response({
+                error: false,
                 status: "success",
+                message: "Data Rewards berhasil ditambahkan"
             });
             response.code(200);
             return response;
@@ -85,7 +89,9 @@ const addRewards = async (request, h) => {
             console.error("Error creating reward:", error);
 
             const response = h.response({
+                error: true,
                 status: "bad request",
+                message: "Gagal menambahkan data rewards"
             });
 
             return response;
@@ -109,23 +115,58 @@ const getAllRewards = async (request, h) => {
     if (key === api_key) {
         try {
             const db = firebase_admin.firestore();
-            const responseData = {};
-            responseData["reward"] = [];
-            const outputDb = await db.collection("reward");
-            const snapshot = await outputDb.get();
+            // const responseData = {};
+            // responseData["reward"] = [];
+            const outputDb = await db.collection("reward").get();
+            // const snapshot = await outputDb.get();
 
-            snapshot.forEach((doc) => {
-                const dataObject = doc.data();
-                responseData["reward"].push(dataObject);
+            // snapshot.forEach((doc) => {
+            //     const dataObject = doc.data();
+            //     responseData["reward"].push(dataObject);
+            // });
+
+            let rewardsData = [];
+            outputDb.forEach((doc) => {
+                rewardsData.push(doc.data());
             });
 
-            const response = h.response(responseData);
-            response.code(200);
-            return response;
+            const fieldOrder = [
+                'reward_name',
+                'reward_point',
+                'url_reward_img',
+              ];
+
+            // Sort the array of objects based on the field order
+            rewardsData = rewardsData.map((obj) => {
+                const sortedObj = {};
+                fieldOrder.forEach((field) => {
+                sortedObj[field] = obj[field];
+                });
+                return sortedObj;
+            });
+
+            return h.response({
+                error: false,
+                message: "Get All Reward data success!",
+                rewardsData,
+              }).code(200);
+
+            // const response = h.response({
+            //     error: false,
+            //     message: "Get All Reward data success!",
+            //     rewardsData,
+            // });
+            // response.code(200);
+            // return response;
         } catch (error) {
+            
             console.error("Error getting all rewards:", error);
+            // const message = "Internal Server Error";
+            // console.log(message);
+            // return invariantError({ request, h }, message);
     
             const response = h.response({
+                error: true,
                 status: "internal server error",
                 message: "Internal Server Error",
             });
@@ -160,6 +201,7 @@ const getRewards = async (request, h) => {
             // Pastikan reward ada sebelum mencoba mengambil data
             if (!rewardDoc.exists) {
                 const response = h.response({
+                    error: true,
                     status: "not found",
                     message: "Reward not found",
                 });
@@ -167,15 +209,33 @@ const getRewards = async (request, h) => {
                 return response;
             }
 
-            const responseData = rewardDoc.data();
+            let rewardsData = rewardDoc.data();
 
-            const response = h.response(responseData);
-            response.code(200);
-            return response;
+            const fieldOrder = [
+                'reward_name',
+                'reward_point',
+                'url_reward_img',
+              ];
+
+            rewardsData = Object.fromEntries(
+                fieldOrder.map((key) => [key, rewardsData[key]]),
+            );
+
+            // const response = h.response(responseData);
+            // response.code(200);
+            // return response;
+
+            return h.response({
+                error: false,
+                message: "Get Detail Reward data success!",
+                rewardsData,
+              }).code(200);
+
     } catch (error) {
         console.error("Error getting reward:", error);
 
         const response = h.response({
+            error: true,
             status: "internal server error",
             message: "Internal Server Error",
         });
@@ -271,6 +331,7 @@ const editRewards = async (request, h) => {
             // Pastikan reward ada sebelum mencoba mengedit
             if (!rewardDoc.exists) {
                 const response = h.response({
+                    error: true,
                     status: "not found",
                     message: "Reward not found",
                 });
@@ -286,7 +347,9 @@ const editRewards = async (request, h) => {
             });
     
             const response = h.response({
+                error: false,
                 status: "success",
+                message: "Data Reward berhasil di update",
             });
             response.code(200);
             return response;
@@ -294,6 +357,7 @@ const editRewards = async (request, h) => {
             console.error("Error updating reward:", error);
     
             const response = h.response({
+                error: true,
                 status: "internal server error",
                 message: "Internal Server Error",
             });
@@ -335,9 +399,10 @@ const deleteRewards = async (request, h) => {
         try {
             const outputDb = await db.collection("reward").doc(id).get();
     
-            // Pastikan pengguna ada sebelum mencoba menghapus
+            // Pastikan reward ada sebelum mencoba menghapus
             if (!outputDb.exists) {
                 const response = h.response({
+                    error: true,
                     status: "not found",
                     message: "Reward not found",
                 });
@@ -345,11 +410,13 @@ const deleteRewards = async (request, h) => {
                 return response;
             }
     
-            // Hapus data pengguna dari Firestore
+            // Hapus data reward dari Firestore
             await outputDb.ref.delete();
     
             const response = h.response({
+                error: false,
                 status: "success",
+                message: "Data Reward berhasil dihapus",
             });
             response.code(200);
             return response;
@@ -357,6 +424,7 @@ const deleteRewards = async (request, h) => {
             console.error("Error deleting reward:", error);
     
             const response = h.response({
+                error: true,
                 status: "internal server error",
                 message: "Internal Server Error",
             });
