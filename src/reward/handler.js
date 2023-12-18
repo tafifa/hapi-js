@@ -72,6 +72,7 @@ const addRewards = async (request, h) => {
 
             // Save reward details to Firestore
             await outputDb.doc(rewardId).set({
+                reward_doc: rewardId,
                 reward_name: reward_name,
                 reward_point: reward_point,
                 url_reward_img: rewardUrl,
@@ -131,6 +132,7 @@ const getAllRewards = async (request, h) => {
             });
 
             const fieldOrder = [
+                'reward_doc',
                 'reward_name',
                 'reward_point',
                 'url_reward_img',
@@ -212,6 +214,7 @@ const getRewards = async (request, h) => {
             let rewardsData = rewardDoc.data();
 
             const fieldOrder = [
+                'reward_doc',
                 'reward_name',
                 'reward_point',
                 'url_reward_img',
