@@ -1,2 +1,2 @@
 ## objective
-1. deploy api to cloud run
+1. isOpen untuk museum brajasandhi

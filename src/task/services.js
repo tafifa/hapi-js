@@ -20,6 +20,7 @@ const getAllMuseum = async ({ request, h }) => {
     'address',
     'location',
     'url_museum_img',
+    'isOpen',
   ];
 
   // Sort the array of objects based on the field order
