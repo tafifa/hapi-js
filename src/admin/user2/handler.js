@@ -460,7 +460,4 @@ const getAllUsers = async (request, h) => {
 };
 
 
-
-
-// module.exports = { makeUsers };
 module.exports = { getAllUsers, getUsers, login, register, editUsers, deleteUsers };
