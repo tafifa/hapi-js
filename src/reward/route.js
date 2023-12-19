@@ -7,14 +7,14 @@ const routes = [
   // Ambil Seluruh Data Rewards
   {
     method: "GET",
-    path: "/rewards/{museum_id}",
+    path: "/rewards",
     handler: getAllRewardsHandler,
   },
 
   // Ambil Data Rewards Tertentu
   {
     method: "GET",
-    path: "/rewards/{museum_id}/{reward_id}",
+    path: "/rewards/{reward_id}",
     handler: getRewardByIdHandler,
   },
 

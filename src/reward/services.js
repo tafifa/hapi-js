@@ -3,12 +3,12 @@ const { invariantError } = require('../exceptions/invariantError');
 const firebaseAdmin = require('firebase-admin');
 
 const getAllRewards = async ({ request, h }) => {
-  const {
-    museum_id,
-  } = request.params;
+  // const {
+  //   museum_id,
+  // } = request.params;
 
   const db = firebaseAdmin.firestore();
-  const outputDb = db.collection('museum').doc(museum_id);
+  const outputDb = db.collection('museum').doc('pohR79Bp9F6GNlV1FEmi');
   const museumData = await outputDb.get();
 
   if (!museumData.exists) {
@@ -42,7 +42,7 @@ const getAllRewards = async ({ request, h }) => {
     return sortedObj;
   });
 
-  console.log(rewardData);
+  // console.log(rewardData);
 
   return h.response({
     error: false,
@@ -53,12 +53,12 @@ const getAllRewards = async ({ request, h }) => {
 
 const getRewardById = async ({ request, h }) => {
   const {
-    museum_id,
+    // museum_id,
     reward_id,
   } = request.params;
 
   const db = firebaseAdmin.firestore();
-  const museumOutputDb = db.collection('museum').doc(museum_id);
+  const museumOutputDb = db.collection('museum').doc('pohR79Bp9F6GNlV1FEmi');
   const museumData = await museumOutputDb.get();
 
   if (!museumData.exists) {
@@ -90,7 +90,7 @@ const getRewardById = async ({ request, h }) => {
     return invariantError({ request, h }, message);
   };
 
-  console.log(rewardData);
+  // console.log(rewardData);
 
   return h.response({
     error: false,
