@@ -41,6 +41,10 @@ const getAllMuseum = async ({ request, h }) => {
 
 const getAllTask = async ({ request, h }) => {
   const {
+    user_id,
+  } = request.query;
+
+  const {
     museum_id,
   } = request.params;
 
@@ -81,10 +85,22 @@ const getAllTask = async ({ request, h }) => {
     return sortedObj;
   });
 
+  console.log(taskData);
+
+  const takenFalse = taskData.filter(
+      (task) => !task.takenBy.includes(user_id),
+  );
+  const takenTrue = taskData.filter(
+      (task) => task.takenBy.includes(user_id),
+  );
+
   return h.response({
     error: false,
     message: "Get Task data success!",
-    taskData,
+    task: {
+      takenFalse,
+      takenTrue,
+    },
   }).code(201);
 };
 
@@ -107,6 +123,7 @@ const getTaskById = async ({ request, h }) => {
   const taskOutputDb = await museumOutputDb.collection('object')
       .doc(task_id)
       .get();
+
   let taskData = taskOutputDb.data();
   const fieldOrder = [
     'object_id',
@@ -117,6 +134,7 @@ const getTaskById = async ({ request, h }) => {
     'points',
     'takenBy',
   ];
+
   taskData = Object.fromEntries(
       fieldOrder.map((key) => [key, taskData[key]]),
   );
