@@ -40,9 +40,9 @@ const getAllMuseum = async ({ request, h }) => {
 };
 
 const getAllTask = async ({ request, h }) => {
-  const {
-    user_id,
-  } = request.query;
+  // const {
+  //   user_id,
+  // } = request.query;
 
   const {
     museum_id,
@@ -87,20 +87,17 @@ const getAllTask = async ({ request, h }) => {
 
   console.log(taskData);
 
-  const takenFalse = taskData.filter(
-      (task) => !task.takenBy.includes(user_id),
-  );
-  const takenTrue = taskData.filter(
-      (task) => task.takenBy.includes(user_id),
-  );
+  // const takenFalse = taskData.filter(
+  //     (task) => !task.takenBy.includes(user_id),
+  // );
+  // const takenTrue = taskData.filter(
+  //     (task) => task.takenBy.includes(user_id),
+  // );
 
   return h.response({
     error: false,
     message: "Get Task data success!",
-    task: {
-      takenFalse,
-      takenTrue,
-    },
+    taskData,
   }).code(201);
 };
 
